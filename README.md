@@ -5,5 +5,5 @@ Features:
 
 - Colour highlight countries
 - Zoom in and out function
-- Download SVG content
+- Download SVG content to local storage
 
