@@ -61,11 +61,11 @@
 </head>
 <body>
   <nav>
-    <div class="logo">World Map Illustrator</div>
-    <div class="tools">
-      <input type="color" id="colorPicker" value="#ff0000" />
-      <button id="toggle-states">Toggle State Borders</button>
-    </div>
+    <div class="logo">World Map illustrator</div>
+      <div class="tools">
+        <input type="color" id="colorPicker" value="#ff0000" />
+        <button id="refresh-map">Refresh Map</button>
+      </div>
     <button id="download-svg">Download SVG</button>
   </nav>
 
@@ -138,6 +138,10 @@
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
+});
+
+document.getElementById("refresh-map").addEventListener("click", () => {
+  location.reload();
 });
   </script>
 </body>
