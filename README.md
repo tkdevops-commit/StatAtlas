@@ -17,13 +17,13 @@ Project 1: StatAtlas – World Map Illustrator
 StatAtlas is a browser-based tool for creating custom, interactive world maps. Designed for content creators and analysts, it supports visual storytelling in geopolitics, business, and trade by allowing users to quickly build compelling map-based visuals.
 
 Features
-	•	Highlight countries with custom colors
-	•	Zoom functionality for detailed views
-	•	Download map as SVG for reuse in presentations and content
-	•	One-click refresh for fast editing and iteration
- - Click-to-highlight contries
- - Search bar with autocomplete
- - Hover highlight country name
+- Highlight countries with custom colors
+- Zoom functionality for detailed views
+- Download map as SVG for reuse in presentations and content
+- One-click refresh for fast editing and iteration
+- Click-to-highlight contries
+- Search bar with autocomplete
+- Hover highlight country name
 
 
 ⸻
