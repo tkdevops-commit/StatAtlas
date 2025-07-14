@@ -1,21 +1,12 @@
-StatAtlas
+# World Map Illustrator
 
-Part of the Integrated Content Creation & Marketing Toolkit
+World Map Illustrator is a web-based digital tool designed to visualize geopolitical data, statistics, and cultural facts from around the globe. It serves as a creative platform for content creators, educators, analysts, and anyone interested in presenting global information in a visually compelling way. The tool features an interactive, responsive world map where users can highlight countries, add custom facts, and layer statistical data such as population, economy, climate, and more.
 
-Project Overview
+With built-in customization options, users can toggle borders, adjust color themes, insert labels, and control the display of map elements to suit different storytelling needs. This makes it ideal for producing high-quality content for social media, websites, educational resources, and professional reports. Whether you're looking to explain complex geopolitical dynamics or share fun trivia about different regions, World Map Illustrator enables you to build informative and engaging visuals with ease.
 
-The Integrated Content Creation & Marketing Toolkit is a suite of intelligent, user-friendly tools designed to streamline digital content creation and enable seamless integration across platforms. Built for marketers, creators, and small businesses, it enhances productivity by centralizing workflows for content generation, publishing, and performance optimization.
+Designed with cross-platform content creation in mind, the application supports exporting static visuals and can also be embedded into websites for interactive use. Its clean structure and intuitive interface make it easy to get started. Simply open the main map page, select the regions of interest, input your data or message, and tailor the design to your style. All code and assets are organized for clarity and scalability, making it easy to expand or adapt the tool to new features in the future.
 
-Key Features
-	•	AI Content Generation: Create written, visual, and multimedia content tailored to different platforms.
-	•	Cross-Platform Integration: Connect with popular design, social media, and analytics tools to maintain brand consistency and avoid duplication.
-	•	Automated Publishing: Manage scheduling and content distribution from a single dashboard.
-	•	Marketing Insights: Tools for SEO, A/B testing, engagement tracking, and campaign analysis.
-	•	Templates & Branding: Drag-and-drop templates ensure high-quality, on-brand output every time.
-
-Purpose & Impact
-
-This toolkit reduces the friction between creation and distribution, allowing users to focus on storytelling and strategic engagement rather than juggling disconnected systems or workflows.
+To launch the project, clone the repository and open the `worldmapillustrator.html` file in your browser. You can also deploy it using GitHub Pages by setting the correct folder path in your repository settings. World Map Illustrator is built using HTML5, CSS3, and vanilla JavaScript, ensuring broad compatibility and fast performance. Whether you're a developer, educator, or storyteller, this tool is built to turn geographic insight into visual impact.
 
 ⸻
 
