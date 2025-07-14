@@ -8,6 +8,8 @@ Designed with cross-platform content creation in mind, the application supports 
 
 To launch the project, clone the repository and open the `worldmapillustrator.html` file in your browser. You can also deploy it using GitHub Pages by setting the correct folder path in your repository settings. World Map Illustrator is built using HTML5, CSS3, and vanilla JavaScript, ensuring broad compatibility and fast performance. Whether you're a developer, educator, or storyteller, this tool is built to turn geographic insight into visual impact.
 
+Visit: https://tkdevops-commit.github.io/StatAtlas/
+
 ⸻
 
 Project 1: StatAtlas – World Map Illustrator
