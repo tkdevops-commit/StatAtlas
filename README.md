@@ -19,6 +19,7 @@ The aim is to reduce friction between content creation and distribution, especia
 Toolkit 1: World map illustrator
 StatAtlas is a webbased world map illustrator that allows users to highlight countries in custom colours, explore geographic data visually, and prepare engaging content for presentations. 
 
+Project 1 - world map illustrator
 Features:
 
 - Colour highlight countries
