@@ -82,6 +82,7 @@
         <input type="text" id="country-search" placeholder="Search country..." autocomplete="off" />
         <ul id="autocomplete-list" style="position:absolute; top:100%; left:0; right:0; background:white; list-style:none; margin:0; padding:0; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000;"></ul>
       </div>
+      <button id="download-svg">Download SVG</button>
     </div>
   </nav>
 
@@ -228,6 +229,7 @@
 
     svg.call(zoom);
 
+    // Refresh Button (no reload)
     document.getElementById("refresh-map").addEventListener("click", () => {
       d3.selectAll("path").attr("fill", "#2c3e50");
       countryInput.value = "";
@@ -235,6 +237,24 @@
       d3.select("#tooltip").style("display", "none");
       svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity); // optional zoom reset
     });
+
+    document.getElementById("download-svg").addEventListener("click", () => {
+  const svgNode = document.querySelector("svg");
+
+  const clone = svgNode.cloneNode(true);
+  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+  const svgData = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = "highlighted-world-map.svg";
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+});
   </script>
 </body>
 </html>
