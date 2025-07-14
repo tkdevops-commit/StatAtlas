@@ -24,3 +24,13 @@ Features
 
 ⸻
 
+	•	Interactive world map with click-to-highlight countries using a color picker
+	•	Search bar with autocomplete to find and highlight countries by name
+	•	Tooltip on hover showing country name (appears after 2-second delay)
+	•	Zoom and pan support (click and drag or scroll to zoom)
+	•	Refresh button that:
+	•	Clears all highlights
+	•	Resets search input and suggestion list
+	•	Hides tooltip
+	•	Resets zoom to default view
+	•	Responsive layout with styled navigation bar and tools
