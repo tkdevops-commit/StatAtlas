@@ -10,6 +10,11 @@ To launch the project, clone the repository and open the `worldmapillustrator.ht
 
 Visit: https://tkdevops-commit.github.io/StatAtlas/
 
+
+Example illustration
+
+<img width="1080" height="1350" alt="TOP 5 LARGEST ECONOMIES BY 2050" src="https://github.com/user-attachments/assets/9173aeb3-646f-4fa8-ade1-2f653db5f15a" />
+
 ⸻
 
 Project 1: StatAtlas – World Map Illustrator
