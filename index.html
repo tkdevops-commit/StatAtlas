@@ -131,8 +131,8 @@
     const countryPaths = {};
     const countryNames = [];
 
-    d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(worldData => {
-      const countries = topojson.feature(worldData, worldData.objects.countries).features;
+    d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json").then(worldData => {
+  const countries = topojson.feature(worldData, worldData.objects.countries).features;
 
       mapGroup.selectAll("path")
         .data(countries)
