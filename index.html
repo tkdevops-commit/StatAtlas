@@ -22,6 +22,8 @@
       align-items: center;
       font-size: 18px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      height: 60px;
+      box-sizing: border-box;
     }
 
     .logo {
@@ -33,6 +35,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     button {
@@ -49,14 +52,17 @@
     }
 
     #map-container {
+      position: relative; /* needed for overlay positioning */
       width: 100vw;
       height: calc(100vh - 60px);
       overflow: hidden;
     }
 
     svg {
+      position: absolute; /* sit under notes overlay */
       width: 100%;
       height: 100%;
+      z-index: 1;
     }
 
     #autocomplete-list li {
@@ -70,6 +76,66 @@
     #autocomplete-list li:hover {
       background-color: #f0f0f0;
     }
+
+    .chat-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 12px;
+    }
+
+    #chat-input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      width: 200px;
+    }
+
+    #chat-send {
+      background: #3498db;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    #chat-send:hover {
+      background: #2980b9;
+    }
+
+    /* Notes overlay sits above the SVG, but allows dragging */
+    #notes-overlay {
+      position: absolute;
+      inset: 0;             /* top:0; right:0; bottom:0; left:0 */
+      z-index: 5;
+      pointer-events: none; /* so map stays interactive below */
+    }
+
+    .note {
+      background: #fff8a6;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: move;
+      position: absolute;
+      font-size: 14px;
+      max-width: 260px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+      pointer-events: auto; /* enable dragging on the note itself */
+      user-select: none;
+    }
+
+    .note .close {
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -82,16 +148,28 @@
         <input type="text" id="country-search" placeholder="Search country..." autocomplete="off" />
         <ul id="autocomplete-list" style="position:absolute; top:100%; left:0; right:0; background:white; list-style:none; margin:0; padding:0; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000;"></ul>
       </div>
+
+      <!-- Chat Box -->
+      <div class="chat-box">
+        <input type="text" id="chat-input" placeholder="Add a fact…" />
+        <button id="chat-send">Add</button>
+      </div>
+
       <button id="download-svg">Download SVG</button>
     </div>
   </nav>
 
-  <div id="map-container"></div>
+  <div id="map-container">
+    <!-- SVG is appended here by D3 -->
+    <!-- Notes overlay sits above the SVG -->
+    <div id="notes-overlay"></div>
+  </div>
 
   <script>
     const width = 1000;
     const height = 600;
 
+    // Build SVG map
     const svg = d3.select("#map-container")
       .append("svg")
       .attr("width", width)
@@ -132,7 +210,7 @@
     const countryNames = [];
 
     d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json").then(worldData => {
-  const countries = topojson.feature(worldData, worldData.objects.countries).features;
+      const countries = topojson.feature(worldData, worldData.objects.countries).features;
 
       mapGroup.selectAll("path")
         .data(countries)
@@ -155,7 +233,7 @@
           d3.select(this).attr("fill", selectedColor);
         })
         .on("mouseover", function (event, d) {
-          const name = d.properties.name;
+          const name = d.properties.name || "";
           hoverTimeout = setTimeout(() => {
             tooltip
               .style("left", `${event.pageX + 10}px`)
@@ -178,7 +256,6 @@
       countryInput.addEventListener("input", function () {
         const query = this.value.toLowerCase();
         autocompleteList.innerHTML = "";
-
         if (!query) return;
 
         const filtered = countryNames.filter(name =>
@@ -191,7 +268,6 @@
           item.addEventListener("click", () => {
             countryInput.value = name;
             autocompleteList.innerHTML = "";
-
             const key = name.toLowerCase();
             if (countryPaths[key]) {
               d3.select(countryPaths[key]).attr("fill", selectedColor);
@@ -235,26 +311,113 @@
       countryInput.value = "";
       autocompleteList.innerHTML = "";
       d3.select("#tooltip").style("display", "none");
-      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity); // optional zoom reset
+      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
     });
 
+    // Download the rendered SVG
     document.getElementById("download-svg").addEventListener("click", () => {
-  const svgNode = document.querySelector("svg");
+      const svgNode = document.querySelector("#map-container svg"); // ensure correct SVG
+      const clone = svgNode.cloneNode(true);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      const svgData = new XMLSerializer().serializeToString(clone);
+      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
 
-  const clone = svgNode.cloneNode(true);
-  clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = url;
+      downloadLink.download = "highlighted-world-map.svg";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    });
 
-  const svgData = new XMLSerializer().serializeToString(clone);
-  const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
+    /* =========================
+       Movable Notes (“chat”)
+       ========================= */
 
-  const downloadLink = document.createElement("a");
-  downloadLink.href = url;
-  downloadLink.download = "highlighted-world-map.svg";
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
-});
+    const notesOverlay = document.getElementById("notes-overlay");
+
+    // Track last mouse position over the map container
+    let lastMouse = { x: 120, y: 120 };
+    document.getElementById("map-container").addEventListener("mousemove", (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      lastMouse.x = e.clientX - rect.left;
+      lastMouse.y = e.clientY - rect.top;
+    });
+
+    // Single handler: create a draggable note at last mouse position
+    document.getElementById("chat-send").addEventListener("click", () => {
+      const input = document.getElementById("chat-input");
+      const message = input.value.trim();
+      if (!message) return;
+
+      createNote(message, lastMouse.x, lastMouse.y);
+      input.value = "";
+    });
+
+    document.getElementById("chat-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        document.getElementById("chat-send").click();
+      }
+    });
+
+    function createNote(text, x, y) {
+      const note = document.createElement("div");
+      note.className = "note";
+      note.style.left = x + "px";
+      note.style.top = y + "px";
+      note.innerHTML = `
+        <span class="close" title="Delete">×</span>
+        <div class="content" contenteditable="true"></div>
+      `;
+      note.querySelector(".content").textContent = text;
+
+      notesOverlay.appendChild(note);
+      makeDraggable(note);
+
+      // delete button
+      note.querySelector(".close").addEventListener("click", () => {
+        notesOverlay.removeChild(note);
+      });
+    }
+
+    function makeDraggable(element) {
+      let offsetX = 0, offsetY = 0, isDown = false;
+
+      element.addEventListener("mousedown", (e) => {
+        if ((e.target).classList.contains("close")) return; // allow delete without drag
+        isDown = true;
+        element.style.zIndex = 1000; // top while dragging
+        const rect = element.getBoundingClientRect();
+        const parentRect = notesOverlay.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        // Move with mouse
+        const onMove = (ev) => {
+          if (!isDown) return;
+          let left = ev.clientX - parentRect.left - offsetX;
+          let top  = ev.clientY - parentRect.top  - offsetY;
+
+          // clamp inside overlay
+          left = Math.max(0, Math.min(left, parentRect.width - rect.width));
+          top  = Math.max(0, Math.min(top,  parentRect.height - rect.height));
+
+          element.style.left = left + "px";
+          element.style.top  = top  + "px";
+        };
+
+        const onUp = () => {
+          isDown = false;
+          element.style.zIndex = 10;
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp);
+        };
+
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+      });
+    }
   </script>
 </body>
 </html>
