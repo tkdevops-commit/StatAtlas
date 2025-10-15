@@ -2,421 +2,298 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>World Map Color Highlighter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World Intelligence Map</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://unpkg.com/topojson-client@3"></script>
   <style>
     body {
       margin: 0;
-      background: #fff;
-      color: #111;
-      font-family: sans-serif;
+      font-family: system-ui, sans-serif;
+      background: #111;
+      color: #eee;
+      overflow: hidden;
     }
-
-    nav {
-      background-color: #222;
-      color: white;
+    header {
       display: flex;
-      justify-content: space-between;
-      padding: 10px 20px;
       align-items: center;
+      justify-content: space-between;
+      background: #222;
+      padding: 10px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    h1 {
       font-size: 18px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      height: 60px;
-      box-sizing: border-box;
+      color: #0ff;
+      letter-spacing: 0.5px;
     }
-
-    .logo {
-      font-weight: bold;
-    }
-
-    .tools {
-      position: relative;
+    #toolbar {
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
     }
-
     button {
-      background-color: #444;
-      color: white;
+      background: #333;
+      color: #eee;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #555;
-    }
-
-    #map-container {
-      position: relative; /* needed for overlay positioning */
-      width: 100vw;
-      height: calc(100vh - 60px);
-      overflow: hidden;
-    }
-
-    svg {
-      position: absolute; /* sit under notes overlay */
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-    }
-
-    #autocomplete-list li {
-      padding: 8px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-      background: #fff;
-      color: #111;
-    }
-
-    #autocomplete-list li:hover {
-      background-color: #f0f0f0;
-    }
-
-    .chat-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: 12px;
-    }
-
-    #chat-input {
       padding: 6px 10px;
       border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      width: 200px;
-    }
-
-    #chat-send {
-      background: #3498db;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s;
+      transition: background 0.2s;
     }
-
-    #chat-send:hover {
-      background: #2980b9;
+    button:hover {
+      background: #444;
     }
-
-    /* Notes overlay sits above the SVG, but allows dragging */
+    input[type="color"], input[type="text"] {
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 4px;
+    }
+    #map-container {
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 60px);
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      background: #181818;
+      cursor: grab;
+    }
+    svg:active {
+      cursor: grabbing;
+    }
+    #tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 6px 10px;
+      border-radius: 4px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      font-size: 13px;
+    }
+    #autocomplete {
+      position: absolute;
+      background: #222;
+      border: 1px solid #333;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      width: 180px;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+      z-index: 10;
+    }
+    #autocomplete li {
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    #autocomplete li:hover {
+      background: #333;
+    }
     #notes-overlay {
       position: absolute;
-      inset: 0;             /* top:0; right:0; bottom:0; left:0 */
-      z-index: 5;
-      pointer-events: none; /* so map stays interactive below */
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
     }
-
     .note {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      cursor: move;
       position: absolute;
-      font-size: 14px;
-      max-width: 260px;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-      pointer-events: auto; /* enable dragging on the note itself */
-      user-select: none;
+      background: #202020;
+      border: 1px solid #555;
+      border-radius: 8px;
+      padding: 10px;
+      width: 160px;
+      color: #eee;
+      pointer-events: all;
+      cursor: grab;
     }
-
     .note .close {
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      font-weight: bold;
+      float: right;
       cursor: pointer;
+      color: #888;
+      font-weight: bold;
+    }
+    .note .content {
+      margin-top: 4px;
+      outline: none;
     }
   </style>
 </head>
 <body>
-  <nav>
-    <div class="logo">World Map Illustrator</div>
-    <div class="tools">
-      <input type="color" id="colorPicker" value="#ff0000" />
-      <button id="refresh-map">Refresh Map</button>
-      <div style="position: relative;">
-        <input type="text" id="country-search" placeholder="Search country..." autocomplete="off" />
-        <ul id="autocomplete-list" style="position:absolute; top:100%; left:0; right:0; background:white; list-style:none; margin:0; padding:0; border:1px solid #ccc; max-height:200px; overflow-y:auto; z-index:1000;"></ul>
-      </div>
 
-      <!-- Chat Box -->
-      <div class="chat-box">
-        <input type="text" id="chat-input" placeholder="Add a fact…" />
-        <button id="chat-send">Add</button>
-      </div>
-
-      <button id="download-svg">Download SVG</button>
-    </div>
-  </nav>
-
-  <div id="map-container">
-    <!-- SVG is appended here by D3 -->
-    <!-- Notes overlay sits above the SVG -->
-    <div id="notes-overlay"></div>
+<header>
+  <h1>World Intelligence Map</h1>
+  <div id="toolbar">
+    <input type="color" id="color-picker" value="#00ffff" title="Choose country color" />
+    <input type="text" id="search" placeholder="Search country..." />
+    <ul id="autocomplete"></ul>
+    <button id="add-note">Add Note</button>
+    <button id="reset-zoom">Reset Zoom</button>
+    <button id="download-map">Download SVG</button>
   </div>
+</header>
 
-  <script>
-    const width = 1000;
-    const height = 600;
+<div id="map-container">
+  <svg id="world-map"></svg>
+  <div id="tooltip"></div>
+  <div id="notes-overlay"></div>
+</div>
 
-    // Build SVG map
-    const svg = d3.select("#map-container")
-      .append("svg")
-      .attr("width", width)
-      .attr("height", height);
+<script>
+// === Data & Initial Setup ===
+const svg = d3.select("#world-map");
+const tooltip = d3.select("#tooltip");
+const overlay = document.getElementById("notes-overlay");
 
-    const mapGroup = svg.append("g");
+const projection = d3.geoNaturalEarth1().scale(200).translate([480, 300]);
+const path = d3.geoPath(projection);
+let selectedColor = document.getElementById("color-picker").value;
+let hoverTimeout;
 
-    const projection = d3.geoNaturalEarth1()
-      .scale(160)
-      .translate([width / 2, height / 2]);
+// === Load and Render Map ===
+d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(data => {
+  const countries = topojson.feature(data, data.objects.countries).features;
 
-    const path = d3.geoPath().projection(projection);
-
-    const colorPicker = document.getElementById("colorPicker");
-    let selectedColor = colorPicker.value;
-
-    colorPicker.addEventListener("input", () => {
-      selectedColor = colorPicker.value;
+  svg.append("g")
+    .selectAll("path")
+    .data(countries)
+    .join("path")
+    .attr("d", path)
+    .attr("fill", "#2a2a2a")
+    .attr("stroke", "#555")
+    .attr("stroke-width", 0.5)
+    .on("mouseover", (event, d) => {
+      hoverTimeout = setTimeout(() => {
+        tooltip.style("opacity", 1)
+               .text(d.properties.name)
+               .style("left", event.pageX + 8 + "px")
+               .style("top", event.pageY - 28 + "px");
+      }, 800);
+    })
+    .on("mouseout", () => {
+      clearTimeout(hoverTimeout);
+      tooltip.style("opacity", 0);
+    })
+    .on("click", function() {
+      d3.select(this)
+        .transition()
+        .duration(300)
+        .attr("fill", selectedColor);
     });
 
-    const tooltip = d3.select("body")
-      .append("div")
-      .attr("id", "tooltip")
-      .style("position", "absolute")
-      .style("padding", "6px 10px")
-      .style("background", "#222")
-      .style("color", "#fff")
-      .style("border-radius", "4px")
-      .style("pointer-events", "none")
-      .style("font-size", "14px")
-      .style("display", "none");
+  initZoom();
+});
 
-    let hoverTimeout;
-
-    const countryInput = document.getElementById("country-search");
-    const autocompleteList = document.getElementById("autocomplete-list");
-    const countryPaths = {};
-    const countryNames = [];
-
-    d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json").then(worldData => {
-      const countries = topojson.feature(worldData, worldData.objects.countries).features;
-
-      mapGroup.selectAll("path")
-        .data(countries)
-        .enter()
-        .append("path")
-        .attr("d", path)
-        .attr("fill", "#2c3e50")
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", 0.5)
-        .attr("data-name", d => d.properties.name || "")
-        .each(function (d) {
-          const name = d.properties.name?.trim();
-          if (name) {
-            const key = name.toLowerCase();
-            countryPaths[key] = this;
-            countryNames.push(name);
-          }
-        })
-        .on("click", function () {
-          d3.select(this).attr("fill", selectedColor);
-        })
-        .on("mouseover", function (event, d) {
-          const name = d.properties.name || "";
-          hoverTimeout = setTimeout(() => {
-            tooltip
-              .style("left", `${event.pageX + 10}px`)
-              .style("top", `${event.pageY + 10}px`)
-              .style("display", "block")
-              .html(name);
-          }, 2000); // Show after 2 seconds
-        })
-        .on("mousemove", function (event) {
-          tooltip
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY + 10}px`);
-        })
-        .on("mouseout", function () {
-          clearTimeout(hoverTimeout);
-          tooltip.style("display", "none");
-        });
-
-      // Autocomplete logic
-      countryInput.addEventListener("input", function () {
-        const query = this.value.toLowerCase();
-        autocompleteList.innerHTML = "";
-        if (!query) return;
-
-        const filtered = countryNames.filter(name =>
-          name.toLowerCase().includes(query)
-        );
-
-        filtered.forEach(name => {
-          const item = document.createElement("li");
-          item.textContent = name;
-          item.addEventListener("click", () => {
-            countryInput.value = name;
-            autocompleteList.innerHTML = "";
-            const key = name.toLowerCase();
-            if (countryPaths[key]) {
-              d3.select(countryPaths[key]).attr("fill", selectedColor);
-            }
-          });
-          autocompleteList.appendChild(item);
-        });
-      });
-
-      // On Enter key
-      countryInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          const name = countryInput.value.trim().toLowerCase();
-          autocompleteList.innerHTML = "";
-          if (countryPaths[name]) {
-            d3.select(countryPaths[name]).attr("fill", selectedColor);
-          }
-        }
-      });
-
-      // Close suggestions when clicking outside
-      document.addEventListener("click", (e) => {
-        if (!countryInput.contains(e.target) && !autocompleteList.contains(e.target)) {
-          autocompleteList.innerHTML = "";
-        }
-      });
+// === Zoom ===
+function initZoom() {
+  const zoom = d3.zoom()
+    .scaleExtent([1, 8])
+    .on("zoom", (event) => {
+      svg.selectAll("path").attr("transform", event.transform);
     });
+  svg.call(zoom);
+  document.getElementById("reset-zoom").addEventListener("click", () => {
+    svg.transition().duration(600).call(zoom.transform, d3.zoomIdentity);
+  });
+}
 
-    // Zoom behavior
-    const zoom = d3.zoom()
-      .scaleExtent([1, 8])
-      .on("zoom", (event) => {
-        mapGroup.attr("transform", event.transform);
-      });
+// === Color Picker ===
+document.getElementById("color-picker").addEventListener("input", e => {
+  selectedColor = e.target.value;
+});
 
-    svg.call(zoom);
+// === Notes ===
+document.getElementById("add-note").addEventListener("click", () => {
+  createNote("Type here...");
+});
 
-    // Refresh Button (no reload)
-    document.getElementById("refresh-map").addEventListener("click", () => {
-      d3.selectAll("path").attr("fill", "#2c3e50");
-      countryInput.value = "";
-      autocompleteList.innerHTML = "";
-      d3.select("#tooltip").style("display", "none");
-      svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+function createNote(text) {
+  const note = document.createElement("div");
+  note.className = "note";
+  note.style.left = "40px";
+  note.style.top = "60px";
+
+  const close = document.createElement("span");
+  close.className = "close";
+  close.textContent = "×";
+  close.title = "Delete note";
+  close.onclick = () => note.remove();
+
+  const content = document.createElement("div");
+  content.className = "content";
+  content.contentEditable = true;
+  content.textContent = text;
+
+  note.append(close, content);
+  overlay.appendChild(note);
+
+  // Dragging logic
+  let offsetX, offsetY, isDragging = false;
+  note.addEventListener("mousedown", e => {
+    isDragging = true;
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+    note.style.cursor = "grabbing";
+  });
+  document.addEventListener("mousemove", e => {
+    if (!isDragging) return;
+    note.style.left = e.pageX - offsetX + "px";
+    note.style.top = e.pageY - offsetY + "px";
+  });
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    note.style.cursor = "grab";
+  });
+}
+
+// === Download SVG ===
+document.getElementById("download-map").addEventListener("click", () => {
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svg.node());
+  if (!source.match(/^<svg[^>]+xmlns=/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "world-intel-map.svg";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// === Autocomplete (lightweight) ===
+const countriesList = ["Australia","Canada","China","France","Germany","India","Japan","Russia","United States","United Kingdom"];
+const input = document.getElementById("search");
+const list = document.getElementById("autocomplete");
+
+input.addEventListener("input", e => {
+  const val = e.target.value.toLowerCase();
+  list.innerHTML = "";
+  if (!val) return list.style.display = "none";
+
+  const filtered = countriesList.filter(c => c.toLowerCase().includes(val));
+  if (filtered.length === 0) return list.style.display = "none";
+
+  const fragment = document.createDocumentFragment();
+  filtered.forEach(name => {
+    const item = document.createElement("li");
+    item.textContent = name;
+    item.addEventListener("click", () => {
+      input.value = name;
+      list.style.display = "none";
     });
+    fragment.appendChild(item);
+  });
+  list.appendChild(fragment);
+  list.style.display = "block";
+});
+</script>
 
-    // Download the rendered SVG
-    document.getElementById("download-svg").addEventListener("click", () => {
-      const svgNode = document.querySelector("#map-container svg"); // ensure correct SVG
-      const clone = svgNode.cloneNode(true);
-      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-      const svgData = new XMLSerializer().serializeToString(clone);
-      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-
-      const downloadLink = document.createElement("a");
-      downloadLink.href = url;
-      downloadLink.download = "highlighted-world-map.svg";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    });
-
-    /* =========================
-       Movable Notes (“chat”)
-       ========================= */
-
-    const notesOverlay = document.getElementById("notes-overlay");
-
-    // Track last mouse position over the map container
-    let lastMouse = { x: 120, y: 120 };
-    document.getElementById("map-container").addEventListener("mousemove", (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      lastMouse.x = e.clientX - rect.left;
-      lastMouse.y = e.clientY - rect.top;
-    });
-
-    // Single handler: create a draggable note at last mouse position
-    document.getElementById("chat-send").addEventListener("click", () => {
-      const input = document.getElementById("chat-input");
-      const message = input.value.trim();
-      if (!message) return;
-
-      createNote(message, lastMouse.x, lastMouse.y);
-      input.value = "";
-    });
-
-    document.getElementById("chat-input").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        document.getElementById("chat-send").click();
-      }
-    });
-
-    function createNote(text, x, y) {
-      const note = document.createElement("div");
-      note.className = "note";
-      note.style.left = x + "px";
-      note.style.top = y + "px";
-      note.innerHTML = `
-        <span class="close" title="Delete">×</span>
-        <div class="content" contenteditable="true"></div>
-      `;
-      note.querySelector(".content").textContent = text;
-
-      notesOverlay.appendChild(note);
-      makeDraggable(note);
-
-      // delete button
-      note.querySelector(".close").addEventListener("click", () => {
-        notesOverlay.removeChild(note);
-      });
-    }
-
-    function makeDraggable(element) {
-      let offsetX = 0, offsetY = 0, isDown = false;
-
-      element.addEventListener("mousedown", (e) => {
-        if ((e.target).classList.contains("close")) return; // allow delete without drag
-        isDown = true;
-        element.style.zIndex = 1000; // top while dragging
-        const rect = element.getBoundingClientRect();
-        const parentRect = notesOverlay.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-
-        // Move with mouse
-        const onMove = (ev) => {
-          if (!isDown) return;
-          let left = ev.clientX - parentRect.left - offsetX;
-          let top  = ev.clientY - parentRect.top  - offsetY;
-
-          // clamp inside overlay
-          left = Math.max(0, Math.min(left, parentRect.width - rect.width));
-          top  = Math.max(0, Math.min(top,  parentRect.height - rect.height));
-
-          element.style.left = left + "px";
-          element.style.top  = top  + "px";
-        };
-
-        const onUp = () => {
-          isDown = false;
-          element.style.zIndex = 10;
-          document.removeEventListener("mousemove", onMove);
-          document.removeEventListener("mouseup", onUp);
-        };
-
-        document.addEventListener("mousemove", onMove);
-        document.addEventListener("mouseup", onUp);
-      });
-    }
-  </script>
 </body>
 </html>
