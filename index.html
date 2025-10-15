@@ -235,16 +235,16 @@
           const name = d.properties.name || "";
           hoverTimeout = setTimeout(() => {
             tooltip
-              .style("left", `${event.pageX + 10}px`)
-              .style("top", `${event.pageY + 10}px`)
+              .style("left", ${event.pageX + 10}px)
+              .style("top", ${event.pageY + 10}px)
               .style("display", "block")
               .html(name);
           }, 2000); // Show after 2 seconds
         })
         .on("mousemove", function (event) {
           tooltip
-            .style("left", `${event.pageX + 10}px`)
-            .style("top", `${event.pageY + 10}px`);
+            .style("left", ${event.pageX + 10}px)
+            .style("top", ${event.pageY + 10}px);
         })
         .on("mouseout", function () {
           clearTimeout(hoverTimeout);
@@ -365,10 +365,10 @@
       note.className = "note";
       note.style.left = x + "px";
       note.style.top = y + "px";
-      note.innerHTML = `
+      note.innerHTML = 
         <span class="close" title="Delete">×</span>
         <div class="content" contenteditable="true"></div>
-      `;
+      ;
       note.querySelector(".content").textContent = text;
 
       notesOverlay.appendChild(note);
