@@ -32,7 +32,7 @@ Features
 
 Newly added features: 
 - Created notes from chat box
-- Movable chatbox
+- Movable chatbox.
 
 *Constantly reviewing and adding features to this personal project as this is something I work on in my free time.
 
