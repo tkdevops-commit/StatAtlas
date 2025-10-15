@@ -131,25 +131,40 @@
     }
 
     .note {
-      padding: 8px 12px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      cursor: move;
-      position: absolute;
-      font-size: 14px;
-      max-width: 260px;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-      pointer-events: auto; /* enable dragging on the note itself */
-      user-select: none;
-    }
+  padding: 8px 12px;
+  border: 0px solid #ccc;
+  border-radius: 6px;
+  cursor: move;
+  position: absolute;
+  font-size: 14px;
+  max-width: 860px;
+  pointer-events: auto;
+  user-select: none;
+  /* remove box-shadow */
+}
 
     .note .close {
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0;                     /* initially hidden */
+  transition: opacity 0.3s ease;
+  pointer-events: none;           /* don’t block dragging */
+}
+
+/* Show the close button after hovering for 3 seconds */
+.note:hover .close {
+  pointer-events: auto;
+  animation: showClose 0s forwards 1.5s; /* delay 3s before showing */
+}
+
+@keyframes showClose {
+  to {
+    opacity: 1;
+  }
+}
 
     #country-search {
   padding: 6px 10px;        /* same padding as chat input */
@@ -399,7 +414,14 @@
     <span class="close" title="Delete">×</span>
     <div class="content" contenteditable="true"></div>
   `;
-  note.querySelector(".content").textContent = text;
+
+  const contentDiv = note.querySelector(".content");
+  contentDiv.textContent = text;
+
+  // Default font and size
+  contentDiv.style.fontFamily = "Arial, sans-serif";
+  contentDiv.style.fontSize = "36px";
+  contentDiv.style.color = "#567"; // optional default color
 
   notesOverlay.appendChild(note);
   makeDraggable(note);
