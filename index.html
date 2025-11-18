@@ -273,6 +273,8 @@
           d3.select(this).attr("fill", selectedColor);
         })
         
+        .on("click", function () {
+  d3.select(this).attr("fill", selectedColor);
 })
 .on("mouseover", function (event, d) {
   const name = d.properties.name || "";
@@ -372,10 +374,6 @@
       downloadLink.click();
       document.body.removeChild(downloadLink);
     });
-
-    /* =========================
-       Movable Notes (“chat”)
-       ========================= */
 
     const notesOverlay = document.getElementById("notes-overlay");
 
